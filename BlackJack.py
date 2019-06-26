@@ -29,7 +29,7 @@ class Decks():
 	def shuffle(self):
 		random.shuffle(self.deck)
 
-class Hands:
+class Hands():
 	##class for both players and house's hand, initalises and keeps track of the value
 	def __init__(self):
 		self.cards=[]
@@ -40,7 +40,7 @@ class Hands:
 			self.cards.append(playingDeck.deck.pop(-1))
 			self.value+=self.cards[-1].cardValue
 			if self.cards[-1].rank=='Ace':
-				self.aces=1
+				self.aces+=1
 	def adjust_for_ace(self):
 		if self.aces>0 and self.value>21:
 			self.value-=10
@@ -68,14 +68,23 @@ class Chips:
 					print("insufficient funds!")
 	def win_bet(self):
 		self.total+=self.bet*2
+		print("congrats, you have won {}".format(chip.bet))
 	def lose_bet(self):
-		pass
+		print("You have lost {}".format(chip.bet))
 
 
-
-def hit(deck, hand):
-	pass
-		
+def yn_input(lines):
+	while True:
+		##Checking for the correct input of int bet
+		try:
+			yorn=input(lines +'\n Enter y or n\n')
+		except ValueError:
+				print ("You have to enter y or n\n")
+		else:
+			if yorn=='y':
+				return True
+			elif yorn=='n':
+				return False
 clear()
 print('*****Welcome to the BlackJack Table, take a seat*****')
 
@@ -90,7 +99,7 @@ while playing:
 	houseHand=Hands()
 	playerHand.add_card(2)
 	houseHand.add_card(2)
-
+	clear()
 	chip.take_bet()		
 	while True:
 		clear()
@@ -99,23 +108,30 @@ while playing:
 		if playerHand.value>21:
 			print("Overeached")
 			break
-		if input("press y for draw, n for check\n")=='y':
+		if yn_input('Do you want to hit or continue'):
 			playerHand.add_card(1)
 			continue
 		break
-	while houseHand.value<17:
-		houseHand.add_card(1)
-	clear()
 	playerHand.adjust_for_ace()
-	print("---------------------------------------------------------------------\nHouse hand: \n {} \nPlayer hand: \n {} \n ".format(houseHand, playerHand))
-	if (playerHand.value>houseHand.value and playerHand.value<=21) or (playerHand.value<=21 and houseHand.value>21):
-		chip.win_bet()
-		print("congrats, you have won {}".format(chip.bet))
+	if playerHand.value<=21:
+		while houseHand.value<17:
+			houseHand.add_card(1)
+		if houseHand.value<=21:
+			if houseHand.value>=playerHand.value:
+				chip.lose_bet()
+			else:
+				chip.win_bet()
+		else:
+			chip.win_bet()
 	else:
-		print("You lost {}\n".format(chip.bet))
-		if chip.total<=0:
+		chip.lose_bet()
+	print("---------------------------------------------------------------------\nHouse hand: \n {} \nPlayer hand: \n {} \n Your bet {} *********** remaining funds {}\n".format(houseHand.cards[0], playerHand, chip.bet, chip.total))
+	if chip.total<=0:
 			print("See you next time")
 			playing=False
+			break
+	
+	playing=yn_input('Do you want to continue playing')
 
 
 
